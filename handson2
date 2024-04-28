@@ -1,0 +1,60 @@
+class SimpleLinearRegression:
+    def __init__(self, X, y):
+        self.X = X
+        self.y = y
+        self.B0 = None
+        self.B1 = None
+
+    def fit(self):
+        n = len(self.X)
+        sum_X = sum(self.X)
+        sum_y = sum(self.y)
+        sum_Xy = sum(x * y for x, y in zip(self.X, self.y))
+        sum_X_squared = sum(x ** 2 for x in self.X)
+
+        self.B1 = (n * sum_Xy - sum_X * sum_y) / (n * sum_X_squared - sum_X ** 2)
+        self.B0 = (sum_y - self.B1 * sum_X) / n
+
+    def predict(self, X_pred):
+        return self.B0 + self.B1 * X_pred
+
+    def correlation_coefficient(self):
+        mean_X = sum(self.X) / len(self.X)
+        mean_y = sum(self.y) / len(self.y)
+        
+        numerator = sum((self.X[i] - mean_X) * (self.y[i] - mean_y) for i in range(len(self.X)))
+        denominator_X = sum((self.X[i] - mean_X) ** 2 for i in range(len(self.X)))
+        denominator_y = sum((self.y[i] - mean_y) ** 2 for i in range(len(self.y)))
+
+        correlation = numerator / ((denominator_X * denominator_y) ** 0.5)
+        return correlation
+
+    def determination_coefficient(self):
+        r = self.correlation_coefficient()
+        return r ** 2
+
+
+X = [23, 26, 30, 34, 43, 48, 52, 57, 58]  
+y = [651, 762, 856, 1063, 1190, 1298, 1421, 1440, 1518]  
+
+regression = SimpleLinearRegression(X, y)
+
+regression.fit()
+
+print("Ecuación de regresión: y = {:.2f} + {:.2f}x".format(regression.B0, regression.B1))
+
+X_pred = 35  
+y_pred = regression.predict(X_pred)
+print("Predicción para X =", X_pred, ": Y =", y_pred)
+
+correlation = regression.correlation_coefficient()
+determination = regression.determination_coefficient()
+print("Coeficiente de correlación:", correlation)
+print("Coeficiente de determinación:", determination)
+
+X_pred = [50, 55, 60, 65, 70]  
+
+print("Predicciones para valores de X que no pertenecen al Data Set:")
+for x in X_pred:
+    y_pred = regression.predict(x)
+    print("Predicción para X =", x, ": Y =", y_pred)
