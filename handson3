@@ -1,0 +1,70 @@
+import numpy as np
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import r2_score
+
+class PolynomialRegression:
+    def __init__(self, X, y):
+        self.X = X
+        self.y = y
+
+    def fit(self, degree):
+        poly_features = PolynomialFeatures(degree=degree)
+        X_poly = poly_features.fit_transform(self.X)
+
+        self.model = LinearRegression()
+        self.model.fit(X_poly, self.y)
+
+    def predict(self, X):
+        poly_features = PolynomialFeatures(degree=len(self.model.coef_) - 1)
+        X_poly = poly_features.fit_transform(X)
+
+        return self.model.predict(X_poly)
+
+    def print_equation(self):
+        coef = self.model.coef_
+        intercept = self.model.intercept_
+
+        equation = f"y = {intercept:.2f}"
+        for i in range(1, len(coef)):
+            equation += f" {'+' if coef[i] >= 0 else ''} {coef[i]:.4f}x{i}"
+
+        print("Ecuación de regresión polinomial:", equation)
+
+    def print_metrics(self, X, y):
+        y_pred = self.predict(X)
+        r2 = r2_score(y, y_pred)
+
+        print("Coeficiente de determinación (R^2):", r2)
+
+
+X = np.array([[108], [115], [106], [97], [95], [91], [97], [83], [83], [78], [54], [67], [56], [53], [61], [115], [81], [78], [30], [45], [99], [32], [25], [28], [90], [89]])
+y = np.array([95, 96, 95, 97, 93, 94, 95, 93, 92, 86, 73, 80, 65, 69, 77, 96, 87, 89, 60, 63, 95, 61, 55, 56, 94, 93])
+
+poly_regression = PolynomialRegression(X, y)
+
+
+degrees = [1, 2, 3]
+
+for degree in degrees:
+    print(f"\nAproximación Polinomial de grado {degree}:")
+    poly_regression.fit(degree)
+    poly_regression.print_equation()
+    poly_regression.print_metrics(X, y)
+
+X_known = np.array([[106], [115], [90]])
+y_known = np.array([95, 96, 94])
+print("\nPredicciones para valores conocidos:")
+print("Valores de entrada (X):", X_known.flatten())
+for degree in degrees:
+    poly_regression.fit(degree)
+    print(f"Aproximación Polinomial de grado {degree}:")
+    print("Valores predichos (Y):", poly_regression.predict(X_known).flatten())
+
+X_unknown = np.array([[120], [125], [130]])
+print("\nPredicciones para valores desconocidos:")
+print("Valores de entrada (X):", X_unknown.flatten())
+for degree in degrees:
+    poly_regression.fit(degree)
+    print(f"Aproximación Polinomial de grado {degree}:")
+    print("Valores predichos (Y):", poly_regression.predict(X_unknown).flatten())
