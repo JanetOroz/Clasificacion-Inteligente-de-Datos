@@ -1,0 +1,79 @@
+import math
+from collections import Counter
+
+class Point:
+    def __init__(self, features, label=None):
+        self.features = features
+        self.label = label
+
+    def __repr__(self):
+        return f'Point(features={self.features}, label={self.label})'
+
+class Dataset:
+    def __init__(self):
+        self.points = []
+
+    def add_point(self, point):
+        self.points.append(point)
+
+    def __repr__(self):
+        return f'Dataset(points={self.points})'
+
+class Distance:
+    @staticmethod
+    def euclidean(point1, point2):
+        return math.sqrt(sum((a - b) ** 2 for a, b in zip(point1.features, point2.features)))
+
+class KNN:
+    def __init__(self, k):
+        self.k = k
+        self.dataset = None
+
+    def fit(self, dataset):
+        self.dataset = dataset
+
+    def predict(self, point):
+        if self.dataset is None:
+            raise ValueError("Dataset not provided. Use the fit method to set the dataset.")
+        
+
+        distances = [(Distance.euclidean(point, train_point), train_point.label) for train_point in self.dataset.points]
+
+        distances.sort(key=lambda x: x[0])
+
+        nearest_labels = [label for _, label in distances[:self.k]]
+
+        most_common_label = Counter(nearest_labels).most_common(1)[0][0]
+        return most_common_label
+
+    def score(self, test_data):
+        correct = 0
+        for point in test_data.points:
+            if point.label == self.predict(point):
+                correct += 1
+        return correct / len(test_data.points)
+
+if __name__ == "__main__":
+  
+    dataset = Dataset()
+    dataset.add_point(Point([1, 2], 'A'))
+    dataset.add_point(Point([2, 3], 'A'))
+    dataset.add_point(Point([3, 4], 'B'))
+    dataset.add_point(Point([6, 7], 'B'))
+
+    knn = KNN(k=3)
+    knn.fit(dataset)
+
+
+    test_point = Point([2.5, 3.5])
+    prediction = knn.predict(test_point)
+    print(f'Predicción para el punto {test_point.features}: {prediction}')
+
+    test_dataset = Dataset()
+    test_dataset.add_point(Point([2, 2], 'A'))
+    test_dataset.add_point(Point([4, 5], 'B'))
+    test_dataset.add_point(Point([1, 1], 'A'))
+    test_dataset.add_point(Point([6, 6], 'B'))
+    
+    accuracy = knn.score(test_dataset)
+    print(f'Precisión del modelo: {accuracy}')
